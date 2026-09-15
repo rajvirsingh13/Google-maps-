@@ -35,9 +35,6 @@ const voiceSearchButton =
 const currentLocationButton =
     document.getElementById("currentLocationButton");
 
-const retryLocationButton =
-    document.getElementById("retryLocationButton");
-
 const layersButton =
     document.getElementById("layersButton");
 
@@ -107,11 +104,13 @@ document.addEventListener("DOMContentLoaded", () => {
     setupEventListeners();
 
     /*
-     * Request location shortly after the page becomes ready.
-     * The browser itself controls the permission popup.
+     * Request location shortly after the page loads.
+     * The browser controls the actual permission popup.
      */
     setTimeout(() => {
+
         requestUserLocation();
+
     }, 300);
 
 });
@@ -133,17 +132,18 @@ function initializeMap() {
     }
 
 
-    /*
-     * Initial map position.
-     * This is only a temporary world view.
-     * After permission is granted, the map moves
-     * to the user's location.
-     */
     map = L.map("map", {
+
         zoomControl: false,
+
         attributionControl: true,
+
         worldCopyJump: true
-    }).setView([20, 0], 2);
+
+    }).setView(
+        [20, 0],
+        2
+    );
 
 
     /* =====================================================
@@ -151,12 +151,18 @@ function initializeMap() {
     ====================================================== */
 
     standardMapLayer = L.tileLayer(
+
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
         {
+
             maxZoom: 19,
+
             attribution:
                 '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
+
         }
+
     );
 
 
@@ -164,30 +170,34 @@ function initializeMap() {
 
 
     /* =====================================================
-       ALTERNATE MAP LAYER
-       Used by the layers button.
+       ALTERNATE MAP STYLE
     ====================================================== */
 
     satelliteLikeLayer = L.tileLayer(
+
         "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+
         {
+
             maxZoom: 19,
+
             attribution:
                 '&copy; OpenStreetMap contributors, Tiles style by HOT'
+
         }
+
     );
 
 
     isMapReady = true;
 
 
-    /*
-     * Fix map dimensions after initialization.
-     */
     setTimeout(() => {
 
         if (map) {
+
             map.invalidateSize();
+
         }
 
     }, 200);
@@ -202,62 +212,58 @@ function initializeMap() {
 function setupEventListeners() {
 
 
-    /* Current location button */
+    /* =====================================================
+       CURRENT LOCATION
+    ====================================================== */
 
     if (currentLocationButton) {
 
         currentLocationButton.addEventListener(
+
             "click",
+
             () => {
 
                 requestUserLocation(true);
 
             }
+
         );
 
     }
 
 
-    /* Search location icon */
+    /* =====================================================
+       SEARCH LOCATION BUTTON
+    ====================================================== */
 
     if (searchLocationButton) {
 
         searchLocationButton.addEventListener(
+
             "click",
+
             () => {
 
-                requestUserLocation(true);
+                handleSearch();
 
             }
+
         );
 
     }
 
 
-    /* Retry */
-
-    if (retryLocationButton) {
-
-        retryLocationButton.addEventListener(
-            "click",
-            () => {
-
-                hidePermissionMessage();
-
-                requestUserLocation(true);
-
-            }
-        );
-
-    }
-
-
-    /* Search */
+    /* =====================================================
+       SEARCH INPUT
+    ====================================================== */
 
     if (searchInput) {
 
         searchInput.addEventListener(
+
             "keydown",
+
             (event) => {
 
                 if (event.key === "Enter") {
@@ -269,42 +275,58 @@ function setupEventListeners() {
                 }
 
             }
+
         );
 
     }
 
 
-    /* Voice button */
+    /* =====================================================
+       VOICE SEARCH
+    ====================================================== */
 
     if (voiceSearchButton) {
 
         voiceSearchButton.addEventListener(
+
             "click",
+
             startVoiceSearch
+
         );
 
     }
 
 
-    /* Layers */
+    /* =====================================================
+       MAP LAYERS
+    ====================================================== */
 
     if (layersButton) {
 
         layersButton.addEventListener(
+
             "click",
+
             toggleMapLayer
+
         );
 
     }
 
 
-    /* Quick action buttons */
+    /* =====================================================
+       QUICK ACTIONS
+    ====================================================== */
 
     if (setHomeButton) {
 
         setHomeButton.addEventListener(
+
             "click",
+
             handleSetHome
+
         );
 
     }
@@ -313,8 +335,11 @@ function setupEventListeners() {
     if (restaurantsButton) {
 
         restaurantsButton.addEventListener(
+
             "click",
+
             handleRestaurantSearch
+
         );
 
     }
@@ -323,24 +348,34 @@ function setupEventListeners() {
     if (petrolButton) {
 
         petrolButton.addEventListener(
+
             "click",
+
             handlePetrolSearch
+
         );
 
     }
 
 
-    /* Bottom navigation */
+    /* =====================================================
+       BOTTOM NAVIGATION
+    ====================================================== */
 
     if (exploreNav) {
 
         exploreNav.addEventListener(
+
             "click",
+
             () => {
 
-                setActiveNavigation(exploreNav);
+                setActiveNavigation(
+                    exploreNav
+                );
 
             }
+
         );
 
     }
@@ -349,12 +384,17 @@ function setupEventListeners() {
     if (youNav) {
 
         youNav.addEventListener(
+
             "click",
+
             () => {
 
-                setActiveNavigation(youNav);
+                setActiveNavigation(
+                    youNav
+                );
 
             }
+
         );
 
     }
@@ -363,28 +403,40 @@ function setupEventListeners() {
     if (contributeNav) {
 
         contributeNav.addEventListener(
+
             "click",
+
             () => {
 
-                setActiveNavigation(contributeNav);
+                setActiveNavigation(
+                    contributeNav
+                );
 
             }
+
         );
 
     }
 
 
-    /* Map movement */
+    /* =====================================================
+       WINDOW RESIZE
+    ====================================================== */
 
     window.addEventListener(
+
         "resize",
+
         () => {
 
             if (map) {
+
                 map.invalidateSize();
+
             }
 
         }
+
     );
 
 }
@@ -399,26 +451,36 @@ function requestUserLocation(showLoading = false) {
     if (!navigator.geolocation) {
 
         showPermissionError(
+
             "Location is not supported",
+
             "Your browser does not support location services."
+
         );
 
         return;
+
     }
 
 
     /*
-     * HTTPS is recommended/required by modern browsers
-     * for reliable geolocation access.
+     * Geolocation works reliably on HTTPS.
      */
+
     if (
+
         window.location.protocol !== "https:" &&
+
         window.location.hostname !== "localhost" &&
+
         window.location.hostname !== "127.0.0.1"
+
     ) {
 
         showMapStatus(
+
             "Location works best on HTTPS."
+
         );
 
     }
@@ -427,24 +489,41 @@ function requestUserLocation(showLoading = false) {
     if (showLoading) {
 
         showMapStatus(
+
             "Getting your location..."
+
         );
 
     }
 
 
     /*
-     * Browser displays its own permission prompt
-     * when permission is required.
+     * IMPORTANT:
+     *
+     * The browser controls the permission popup.
+     *
+     * This code does NOT bypass permission.
+     *
+     * Location is requested only through the
+     * browser's official Geolocation API.
      */
+
     navigator.geolocation.getCurrentPosition(
+
         handleLocationSuccess,
+
         handleLocationError,
+
         {
+
             enableHighAccuracy: true,
+
             timeout: 20000,
+
             maximumAge: 0
+
         }
+
     );
 
 }
@@ -466,59 +545,94 @@ async function handleLocationSuccess(position) {
         position.coords.accuracy;
 
 
+    /*
+     * Current location exists only for this page session.
+     *
+     * It is NOT automatically sent to a server.
+     */
+
     currentLocation = {
+
         latitude: latitude,
+
         longitude: longitude,
+
         accuracy: accuracy
+
     };
 
 
-    /* Update displayed coordinates */
+    /* =====================================================
+       UPDATE LATITUDE
+    ====================================================== */
 
     if (latitudeValue) {
 
         latitudeValue.textContent =
+
             latitude.toFixed(6);
 
     }
 
 
+    /* =====================================================
+       UPDATE LONGITUDE
+    ====================================================== */
+
     if (longitudeValue) {
 
         longitudeValue.textContent =
+
             longitude.toFixed(6);
 
     }
 
 
+    /* =====================================================
+       UPDATE ACCURACY
+    ====================================================== */
+
     if (accuracyValue) {
 
         accuracyValue.textContent =
+
             formatAccuracy(accuracy);
 
     }
 
 
-    /* Hide permission message */
+    /* =====================================================
+       HIDE PERMISSION MESSAGE
+    ====================================================== */
 
     hidePermissionMessage();
 
 
-    /* Show location marker */
+    /* =====================================================
+       SHOW LOCATION MARKER
+    ====================================================== */
 
     showLocationMarker();
 
 
-    /* Move map */
+    /* =====================================================
+       UPDATE MAP
+    ====================================================== */
 
     updateMapLocation(
+
         latitude,
+
         longitude,
+
         accuracy
+
     );
 
 
-    /* Show result */
+    /* =====================================================
+       SHOW LOCATION RESULT
+    ====================================================== */
 
     if (locationResult) {
 
@@ -548,20 +662,19 @@ async function handleLocationSuccess(position) {
     );
 
 
-    /*
-     * Reverse geocoding.
-     * Converts coordinates into readable
-     * address information when available.
-     */
+    /* =====================================================
+       REVERSE GEOCODING
+    ====================================================== */
+
     await getAddressFromCoordinates(
+
         latitude,
+
         longitude
+
     );
 
 
-    /*
-     * Remove temporary status after address lookup.
-     */
     setTimeout(() => {
 
         hideMapStatus();
@@ -580,51 +693,84 @@ function handleLocationError(error) {
     if (!error) {
 
         showPermissionError(
+
             "Location unavailable",
+
             "We could not get your current location."
+
         );
 
         return;
+
     }
 
 
     switch (error.code) {
 
+
+        /* =================================================
+           PERMISSION DENIED
+        ================================================== */
+
         case error.PERMISSION_DENIED:
 
             showPermissionError(
-                "Location permission denied",
-                "Please allow location access in your browser settings to find your location."
+
+                "Location permission required",
+
+                "Please allow location access in your browser settings to show your location."
+
             );
 
             break;
 
+
+        /* =================================================
+           LOCATION UNAVAILABLE
+        ================================================== */
 
         case error.POSITION_UNAVAILABLE:
 
             showPermissionError(
+
                 "Location unavailable",
-                "Your device could not determine the current location. Check GPS or location services and try again."
+
+                "Your device could not determine your current location. Please check your device location settings."
+
             );
 
             break;
 
+
+        /* =================================================
+           TIMEOUT
+        ================================================== */
 
         case error.TIMEOUT:
 
             showPermissionError(
-                "Location request timed out",
-                "It took too long to find your location. Please try again."
+
+                "Location could not be found",
+
+                "The location request took too long. Please check your device location settings."
+
             );
 
             break;
 
 
+        /* =================================================
+           UNKNOWN ERROR
+        ================================================== */
+
         default:
 
             showPermissionError(
+
                 "Unable to find location",
+
                 "Something went wrong while getting your location."
+
             );
 
             break;
@@ -639,50 +785,72 @@ function handleLocationError(error) {
 ========================================================= */
 
 function updateMapLocation(
+
     latitude,
+
     longitude,
+
     accuracy
+
 ) {
 
     if (!map || !isMapReady) {
+
         return;
+
     }
 
 
-    const position =
-        [latitude, longitude];
+    const position = [
+
+        latitude,
+
+        longitude
+
+    ];
 
 
-    /*
-     * Remove previous marker.
-     */
+    /* =====================================================
+       REMOVE OLD MARKER
+    ====================================================== */
+
     if (userMarker) {
 
-        map.removeLayer(userMarker);
-
-    }
-
-
-    /*
-     * Remove previous accuracy circle.
-     */
-    if (userAccuracyCircle) {
-
         map.removeLayer(
-            userAccuracyCircle
+            userMarker
         );
 
     }
 
 
     /* =====================================================
-       USER LOCATION MARKER
+       REMOVE OLD ACCURACY CIRCLE
+    ====================================================== */
+
+    if (userAccuracyCircle) {
+
+        map.removeLayer(
+
+            userAccuracyCircle
+
+        );
+
+    }
+
+
+    /* =====================================================
+       USER LOCATION ICON
     ====================================================== */
 
     const locationIcon =
+
         L.divIcon({
-            className: "custom-user-location",
+
+            className:
+                "custom-user-location",
+
             html: `
+
                 <div style="
                     width: 24px;
                     height: 24px;
@@ -692,28 +860,69 @@ function updateMapLocation(
                     box-shadow:
                         0 1px 7px rgba(0,0,0,0.35);
                 "></div>
+
             `,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
+
+            iconSize: [
+
+                24,
+
+                24
+
+            ],
+
+            iconAnchor: [
+
+                12,
+
+                12
+
+            ]
+
         });
 
 
+    /* =====================================================
+       CREATE MARKER
+    ====================================================== */
+
     userMarker =
+
         L.marker(
+
             position,
+
             {
-                icon: locationIcon,
-                keyboard: false
+
+                icon:
+                    locationIcon,
+
+                keyboard:
+                    false
+
             }
+
         ).addTo(map);
 
 
+    /* =====================================================
+       TOOLTIP
+    ====================================================== */
+
     userMarker.bindTooltip(
+
         "Your current location",
+
         {
-            direction: "top",
-            offset: [0, -10]
+
+            direction:
+                "top",
+
+            offset:
+                [0, -10]
+
         }
+
     );
 
 
@@ -722,44 +931,79 @@ function updateMapLocation(
     ====================================================== */
 
     if (
+
         Number.isFinite(accuracy) &&
+
         accuracy > 0
+
     ) {
 
         userAccuracyCircle =
+
             L.circle(
+
                 position,
+
                 {
-                    radius: accuracy,
-                    fillColor: "#1683ff",
-                    fillOpacity: 0.12,
-                    color: "#1683ff",
-                    opacity: 0.25,
-                    weight: 1
+
+                    radius:
+                        accuracy,
+
+                    fillColor:
+                        "#1683ff",
+
+                    fillOpacity:
+                        0.12,
+
+                    color:
+                        "#1683ff",
+
+                    opacity:
+                        0.25,
+
+                    weight:
+                        1
+
                 }
+
             ).addTo(map);
 
     }
 
 
-    /*
-     * Center map on user.
-     */
+    /* =====================================================
+       CENTER MAP
+    ====================================================== */
+
     map.setView(
+
         position,
-        getSuitableZoom(accuracy),
+
+        getSuitableZoom(
+            accuracy
+        ),
+
         {
-            animate: true
+
+            animate:
+                true
+
         }
+
     );
 
 
-    /*
-     * Keep map UI responsive.
-     */
+    /* =====================================================
+       INVALIDATE MAP SIZE
+    ====================================================== */
+
     setTimeout(() => {
 
-        map.invalidateSize();
+        if (map) {
+
+            map.invalidateSize();
+
+        }
 
     }, 250);
 
@@ -780,24 +1024,39 @@ function getSuitableZoom(accuracy) {
 
 
     if (accuracy <= 20) {
+
         return 18;
+
     }
+
 
     if (accuracy <= 50) {
+
         return 17;
+
     }
+
 
     if (accuracy <= 100) {
+
         return 16;
+
     }
+
 
     if (accuracy <= 500) {
+
         return 14;
+
     }
 
+
     if (accuracy <= 2000) {
+
         return 12;
+
     }
+
 
     return 10;
 
@@ -825,7 +1084,9 @@ function formatAccuracy(accuracy) {
 
 
     return `${(
+
         accuracy / 1000
+
     ).toFixed(2)} km`;
 
 }
@@ -836,64 +1097,86 @@ function formatAccuracy(accuracy) {
 ========================================================= */
 
 async function getAddressFromCoordinates(
+
     latitude,
+
     longitude
+
 ) {
 
     if (!locationAddress) {
+
         return;
+
     }
 
 
-    /*
-     * Nominatim / OpenStreetMap reverse geocoding.
-     *
-     * This is used only after the user has
-     * granted location permission.
-     */
     const url =
+
         "https://nominatim.openstreetmap.org/reverse" +
+
         `?format=jsonv2` +
+
         `&lat=${encodeURIComponent(latitude)}` +
+
         `&lon=${encodeURIComponent(longitude)}` +
+
         `&zoom=18` +
+
         `&addressdetails=1`;
 
 
     try {
 
         const response =
+
             await fetch(
+
                 url,
+
                 {
-                    method: "GET",
+
+                    method:
+                        "GET",
+
                     headers: {
+
                         "Accept":
                             "application/json"
+
                     }
+
                 }
+
             );
 
 
         if (!response.ok) {
 
             throw new Error(
+
                 "Address service unavailable"
+
             );
 
         }
 
 
         const data =
+
             await response.json();
 
 
         if (
+
             data &&
+
             data.display_name
+
         ) {
 
             locationAddress.textContent =
+
                 data.display_name;
 
             return;
@@ -902,17 +1185,24 @@ async function getAddressFromCoordinates(
 
 
         locationAddress.textContent =
+
             "Address information is not available.";
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
+
             "Reverse geocoding error:",
+
             error
+
         );
 
 
         locationAddress.textContent =
+
             "Could not retrieve address information.";
 
     }
@@ -927,7 +1217,9 @@ async function getAddressFromCoordinates(
 function showLocationMarker() {
 
     if (!locationMarker) {
+
         return;
+
     }
 
 
@@ -942,12 +1234,21 @@ function showLocationMarker() {
 
 function showMapStatus(message) {
 
-    if (!mapStatus || !mapStatusText) {
+    if (
+
+        !mapStatus ||
+
+        !mapStatusText
+
+    ) {
+
         return;
+
     }
 
 
     mapStatusText.textContent =
+
         message;
 
     mapStatus.hidden = false;
@@ -962,7 +1263,9 @@ function showMapStatus(message) {
 function hideMapStatus() {
 
     if (!mapStatus) {
+
         return;
+
     }
 
 
@@ -972,17 +1275,21 @@ function hideMapStatus() {
 
 
 /* =========================================================
-   16. SHOW PERMISSION ERROR
+   16. SHOW PERMISSION MESSAGE
 ========================================================= */
 
 function showPermissionError(
+
     title,
+
     message
+
 ) {
 
     if (permissionTitle) {
 
         permissionTitle.textContent =
+
             title;
 
     }
@@ -991,6 +1298,7 @@ function showPermissionError(
     if (permissionText) {
 
         permissionText.textContent =
+
             message;
 
     }
@@ -1029,53 +1337,79 @@ function hidePermissionMessage() {
 
 function toggleMapLayer() {
 
-    if (!map || !standardMapLayer) {
+    if (
+
+        !map ||
+
+        !standardMapLayer
+
+    ) {
+
         return;
+
     }
 
 
     if (
+
         map.hasLayer(
+
             standardMapLayer
+
         )
+
     ) {
 
         map.removeLayer(
+
             standardMapLayer
+
         );
 
 
         if (satelliteLikeLayer) {
 
             satelliteLikeLayer.addTo(
+
                 map
+
             );
 
         }
 
 
         showMapStatus(
+
             "Alternate map style"
+
         );
 
-    } else {
+    }
+
+    else {
 
         if (satelliteLikeLayer) {
 
             map.removeLayer(
+
                 satelliteLikeLayer
+
             );
 
         }
 
 
         standardMapLayer.addTo(
+
             map
+
         );
 
 
         showMapStatus(
+
             "Standard map"
+
         );
 
     }
@@ -1094,26 +1428,35 @@ function toggleMapLayer() {
    19. SEARCH
 ========================================================= */
 
-function handleSearch() {
+async function handleSearch() {
 
     if (!searchInput) {
+
         return;
+
     }
 
 
     const query =
+
         searchInput.value.trim();
 
 
     if (!query) {
 
         showMapStatus(
+
             "Enter a place or address to search."
+
         );
 
+
         setTimeout(
+
             hideMapStatus,
+
             2000
+
         );
 
         return;
@@ -1121,79 +1464,77 @@ function handleSearch() {
     }
 
 
-    /*
-     * Full place-search functionality will be
-     * connected in a later version.
-     */
     showMapStatus(
+
         `Searching for "${query}"...`
+
     );
-
-
-    /*
-     * For now we use a geocoding request to
-     * find the entered place/address.
-     */
-    searchPlace(
-        query
-    );
-
-}
-
-
-/* =========================================================
-   20. PLACE SEARCH
-========================================================= */
-
-async function searchPlace(query) {
-
-    const searchUrl =
-        "https://nominatim.openstreetmap.org/search" +
-        `?format=jsonv2` +
-        `&q=${encodeURIComponent(query)}` +
-        `&limit=1`;
 
 
     try {
 
+        const url =
+
+            "https://nominatim.openstreetmap.org/search" +
+
+            `?format=jsonv2` +
+
+            `&q=${encodeURIComponent(query)}` +
+
+            `&limit=1`;
+
+
         const response =
+
             await fetch(
-                searchUrl,
+
+                url,
+
                 {
-                    method: "GET",
+
+                    method:
+                        "GET",
+
                     headers: {
+
                         "Accept":
                             "application/json"
+
                     }
+
                 }
+
             );
 
 
         if (!response.ok) {
 
             throw new Error(
-                "Search unavailable"
+
+                "Search service unavailable"
+
             );
 
         }
 
 
         const results =
+
             await response.json();
 
 
         if (
+
             !Array.isArray(results) ||
+
             results.length === 0
+
         ) {
 
             showMapStatus(
-                "No location found."
-            );
 
-            setTimeout(
-                hideMapStatus,
-                2000
+                "Location not found."
+
             );
 
             return;
@@ -1202,23 +1543,32 @@ async function searchPlace(query) {
 
 
         const result =
+
             results[0];
 
 
         const latitude =
+
             Number(result.lat);
 
+
         const longitude =
+
             Number(result.lon);
 
 
         if (
+
             !Number.isFinite(latitude) ||
+
             !Number.isFinite(longitude)
+
         ) {
 
             throw new Error(
-                "Invalid coordinates"
+
+                "Invalid search coordinates"
+
             );
 
         }
@@ -1227,71 +1577,150 @@ async function searchPlace(query) {
         if (map) {
 
             map.setView(
-                [latitude, longitude],
+
+                [
+
+                    latitude,
+
+                    longitude
+
+                ],
+
                 16,
+
                 {
-                    animate: true
+
+                    animate:
+                        true
+
                 }
+
             );
 
         }
 
 
+        if (locationResult) {
+
+            locationResult.hidden = false;
+
+        }
+
+
+        if (locationTitle) {
+
+            locationTitle.textContent =
+
+                result.name ||
+
+                "Search result";
+
+        }
+
+
+        if (locationAddress) {
+
+            locationAddress.textContent =
+
+                result.display_name ||
+
+                "Address unavailable.";
+
+        }
+
+
+        if (latitudeValue) {
+
+            latitudeValue.textContent =
+
+                latitude.toFixed(6);
+
+        }
+
+
+        if (longitudeValue) {
+
+            longitudeValue.textContent =
+
+                longitude.toFixed(6);
+
+        }
+
+
+        if (accuracyValue) {
+
+            accuracyValue.textContent =
+
+                "Search result";
+
+        }
+
+
         showMapStatus(
-            result.display_name ||
+
             "Location found"
+
         );
 
 
-        setTimeout(
-            hideMapStatus,
-            2500
-        );
+    }
 
-
-    } catch (error) {
+    catch (error) {
 
         console.error(
+
             "Search error:",
+
             error
+
         );
 
 
         showMapStatus(
-            "Search could not be completed."
-        );
 
+            "Could not search for that location."
 
-        setTimeout(
-            hideMapStatus,
-            2500
         );
 
     }
+
+
+    setTimeout(() => {
+
+        hideMapStatus();
+
+    }, 2500);
 
 }
 
 
 /* =========================================================
-   21. VOICE SEARCH
+   20. VOICE SEARCH
 ========================================================= */
 
 function startVoiceSearch() {
 
     const SpeechRecognition =
+
         window.SpeechRecognition ||
+
         window.webkitSpeechRecognition;
 
 
     if (!SpeechRecognition) {
 
         showMapStatus(
+
             "Voice search is not supported by this browser."
+
         );
 
         setTimeout(
+
             hideMapStatus,
+
             2500
+
         );
 
         return;
@@ -1300,21 +1729,29 @@ function startVoiceSearch() {
 
 
     const recognition =
+
         new SpeechRecognition();
 
 
     recognition.lang =
+
         "en-IN";
 
+
     recognition.interimResults =
+
         false;
 
+
     recognition.maxAlternatives =
+
         1;
 
 
     showMapStatus(
+
         "Listening..."
+
     );
 
 
@@ -1322,16 +1759,19 @@ function startVoiceSearch() {
 
 
     recognition.onresult =
+
         (event) => {
 
-            const transcript =
+            const text =
+
                 event.results[0][0].transcript;
 
 
             if (searchInput) {
 
                 searchInput.value =
-                    transcript;
+
+                    text;
 
             }
 
@@ -1342,27 +1782,41 @@ function startVoiceSearch() {
 
 
     recognition.onerror =
-        () => {
 
-            showMapStatus(
-                "Voice search could not be completed."
+        (event) => {
+
+            console.error(
+
+                "Voice search error:",
+
+                event.error
+
             );
 
+
+            showMapStatus(
+
+                "Voice search could not be started."
+
+            );
+
+
             setTimeout(
+
                 hideMapStatus,
-                2000
+
+                2500
+
             );
 
         };
 
 
     recognition.onend =
+
         () => {
 
-            /*
-             * Search result handling is already
-             * performed in onresult.
-             */
+            hideMapStatus();
 
         };
 
@@ -1370,7 +1824,7 @@ function startVoiceSearch() {
 
 
 /* =========================================================
-   22. SET HOME
+   21. SET HOME
 ========================================================= */
 
 function handleSetHome() {
@@ -1378,12 +1832,17 @@ function handleSetHome() {
     if (!currentLocation) {
 
         showMapStatus(
-            "Find your location first."
+
+            "Allow location access first."
+
         );
 
         setTimeout(
+
             hideMapStatus,
+
             2000
+
         );
 
         return;
@@ -1391,36 +1850,39 @@ function handleSetHome() {
     }
 
 
-    /*
-     * At this stage we only demonstrate the action.
-     * Permanent saved-home functionality can be
-     * added later with explicit user confirmation.
-     */
     showMapStatus(
-        "Current location selected as home."
+
+        "Home location selected for this session."
+
     );
 
 
     setTimeout(
+
         hideMapStatus,
+
         2000
+
     );
 
 }
 
 
 /* =========================================================
-   23. RESTAURANT SEARCH
+   22. RESTAURANT SEARCH
 ========================================================= */
 
 function handleRestaurantSearch() {
 
     if (!searchInput) {
+
         return;
+
     }
 
 
     searchInput.value =
+
         "Restaurants";
 
 
@@ -1430,17 +1892,20 @@ function handleRestaurantSearch() {
 
 
 /* =========================================================
-   24. PETROL SEARCH
+   23. PETROL SEARCH
 ========================================================= */
 
 function handlePetrolSearch() {
 
     if (!searchInput) {
+
         return;
+
     }
 
 
     searchInput.value =
+
         "Petrol pump";
 
 
@@ -1450,210 +1915,75 @@ function handlePetrolSearch() {
 
 
 /* =========================================================
-   25. BOTTOM NAVIGATION
+   24. BOTTOM NAVIGATION
 ========================================================= */
 
-function setActiveNavigation(
-    activeButton
-) {
+function setActiveNavigation(activeElement) {
 
-    const navItems =
-        [
-            exploreNav,
-            youNav,
-            contributeNav
-        ];
+    const navigationItems = [
+
+        exploreNav,
+
+        youNav,
+
+        contributeNav
+
+    ];
 
 
-    navItems.forEach(
-        (button) => {
+    navigationItems.forEach(
 
-            if (!button) {
+        (item) => {
+
+            if (!item) {
+
                 return;
+
             }
 
 
-            button.classList.remove(
-                "active"
-            );
+            item.classList.toggle(
 
+                "active",
 
-            button.removeAttribute(
-                "aria-current"
+                item === activeElement
+
             );
 
         }
+
     );
 
-
-    if (activeButton) {
-
-        activeButton.classList.add(
-            "active"
-        );
-
-
-        activeButton.setAttribute(
-            "aria-current",
-            "page"
-        );
-
-    }
-
 }
 
 
 /* =========================================================
-   26. PAGE VISIBILITY
-========================================================= */
-
-document.addEventListener(
-    "visibilitychange",
-    () => {
-
-        if (
-            !document.hidden &&
-            map
-        ) {
-
-            setTimeout(
-                () => {
-
-                    map.invalidateSize();
-
-                },
-                100
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   27. PREVENT ACCIDENTAL PAGE SCROLL
-========================================================= */
-
-document.addEventListener(
-    "touchmove",
-    (event) => {
-
-        /*
-         * Allow scrolling inside designated
-         * scrollable areas.
-         */
-        const target =
-            event.target;
-
-
-        const isScrollable =
-            target.closest(
-                ".bottom-sheet-content, .quick-actions"
-            );
-
-
-        if (!isScrollable) {
-
-            /*
-             * The app itself should remain fixed.
-             */
-            event.preventDefault();
-
-        }
-
-    },
-    {
-        passive: false
-    }
-);
-
-
-/* =========================================================
-   28. SECURITY / SAFE TEXT HELPERS
-========================================================= */
-
-/*
- * This helper can be used later whenever
- * external API data is inserted into HTML.
- */
-function escapeHTML(value) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-
-        return "";
-
-    }
-
-
-    return String(value)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-/* =========================================================
-   29. DEBUG INFORMATION
-========================================================= */
-
-function getCurrentLocationData() {
-
-    if (!currentLocation) {
-
-        return null;
-
-    }
-
-
-    return {
-        latitude:
-            currentLocation.latitude,
-
-        longitude:
-            currentLocation.longitude,
-
-        accuracy:
-            currentLocation.accuracy
-    };
-
-}
-
-
-/* =========================================================
-   30. APPLICATION READY
+   25. PUBLIC API
 ========================================================= */
 
 window.LocationMapApp = {
 
-    getCurrentLocation:
-        getCurrentLocationData,
+    getCurrentLocation: () => {
 
-    requestLocation:
-        requestUserLocation,
+        return currentLocation;
 
-    search:
-        searchPlace
+    },
+
+    requestLocation: () => {
+
+        requestUserLocation(true);
+
+    },
+
+    search: () => {
+
+        handleSearch();
+
+    }
 
 };
+
+
+/* =========================================================
+   END OF SCRIPT
+========================================================= */
