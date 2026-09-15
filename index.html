@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Mobile / Responsive -->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <!-- Basic SEO -->
+    <title>Find My Location</title>
+    <meta
+        name="description"
+        content="Find your current location and view location information on an interactive map."
+    >
+    <meta name="robots" content="index, follow">
+
+    <!-- Theme -->
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Prevent unwanted phone number detection -->
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Leaflet map library -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIINfQ3KQm9Wz1z0J6wJQ6J0QKQKQKQKQKQ="
+        crossorigin=""
+    >
+</head>
+
+<body>
+
+    <!-- =====================================================
+         APP CONTAINER
+    ====================================================== -->
+    <main id="app" class="app">
+
+        <!-- =================================================
+             MAP AREA
+        ================================================== -->
+        <section
+            id="map"
+            class="map-container"
+            aria-label="Interactive map"
+        >
+            <!-- Map will be initialized here by script.js -->
+
+            <!-- =============================================
+                 TOP SEARCH AREA
+            ============================================== -->
+            <div class="top-interface">
+
+                <div class="search-wrapper">
+
+                    <button
+                        type="button"
+                        id="searchLocationButton"
+                        class="search-location-icon"
+                        aria-label="Location search"
+                    >
+                        <span class="location-logo" aria-hidden="true">
+                            <span class="location-logo-inner"></span>
+                        </span>
+                    </button>
+
+                    <input
+                        type="search"
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="Search here"
+                        autocomplete="off"
+                        enterkeyhint="search"
+                        aria-label="Search places or addresses"
+                    >
+
+                    <button
+                        type="button"
+                        id="voiceSearchButton"
+                        class="voice-button"
+                        aria-label="Voice search"
+                    >
+                        <span class="mic-icon" aria-hidden="true"></span>
+                    </button>
+
+                </div>
+
+                <!-- =========================================
+                     QUICK ACTIONS
+                ========================================== -->
+                <div class="quick-actions">
+
+                    <button
+                        type="button"
+                        id="setHomeButton"
+                        class="quick-action"
+                    >
+                        <span class="quick-action-icon home-icon" aria-hidden="true">
+                            ⌂
+                        </span>
+                        <span>Set home</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        id="restaurantsButton"
+                        class="quick-action"
+                    >
+                        <span
+                            class="quick-action-icon restaurant-icon"
+                            aria-hidden="true"
+                        >
+                            ♜
+                        </span>
+                        <span>Restaurants</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        id="petrolButton"
+                        class="quick-action"
+                    >
+                        <span
+                            class="quick-action-icon petrol-icon"
+                            aria-hidden="true"
+                        >
+                            ⛽
+                        </span>
+                        <span>Petrol</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 MAP SIDE CONTROLS
+            ============================================== -->
+            <div class="map-controls">
+
+                <button
+                    type="button"
+                    id="layersButton"
+                    class="map-control layers-control"
+                    aria-label="Map layers"
+                    title="Map layers"
+                >
+                    <span class="layers-icon" aria-hidden="true">
+                        ◈
+                    </span>
+                </button>
+
+                <button
+                    type="button"
+                    id="currentLocationButton"
+                    class="map-control location-control"
+                    aria-label="Find my location"
+                    title="Find my location"
+                >
+                    <span class="current-location-icon" aria-hidden="true">
+                        ◎
+                    </span>
+                </button>
+
+            </div>
+
+
+            <!-- =============================================
+                 MAP STATUS
+            ============================================== -->
+            <div
+                id="mapStatus"
+                class="map-status"
+                role="status"
+                aria-live="polite"
+                hidden
+            >
+                <span id="mapStatusText">Getting your location...</span>
+            </div>
+
+
+            <!-- =============================================
+                 LOCATION MARKER PLACEHOLDER
+            ============================================== -->
+            <div
+                id="locationMarker"
+                class="location-marker"
+                aria-hidden="true"
+                hidden
+            >
+                <span class="location-marker-dot"></span>
+                <span class="location-marker-pulse"></span>
+            </div>
+
+
+            <!-- =============================================
+                 BOTTOM SHEET
+            ============================================== -->
+            <section
+                id="bottomSheet"
+                class="bottom-sheet"
+                aria-label="Location information"
+            >
+
+                <div class="bottom-sheet-handle"></div>
+
+                <div class="bottom-sheet-content">
+
+                    <h1 id="bottomSheetTitle">
+                        Local vibe
+                    </h1>
+
+                    <div
+                        id="locationResult"
+                        class="location-result"
+                        hidden
+                    >
+
+                        <div class="result-header">
+                            <span class="result-pin" aria-hidden="true">
+                                ●
+                            </span>
+
+                            <div>
+                                <h2 id="locationTitle">
+                                    Your location
+                                </h2>
+
+                                <p id="locationAddress">
+                                    Location information will appear here.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="coordinates-box">
+
+                            <div class="coordinate-item">
+                                <span class="coordinate-label">
+                                    Latitude
+                                </span>
+
+                                <span
+                                    id="latitudeValue"
+                                    class="coordinate-value"
+                                >
+                                    —
+                                </span>
+                            </div>
+
+                            <div class="coordinate-item">
+                                <span class="coordinate-label">
+                                    Longitude
+                                </span>
+
+                                <span
+                                    id="longitudeValue"
+                                    class="coordinate-value"
+                                >
+                                    —
+                                </span>
+                            </div>
+
+                            <div class="coordinate-item">
+                                <span class="coordinate-label">
+                                    Accuracy
+                                </span>
+
+                                <span
+                                    id="accuracyValue"
+                                    class="coordinate-value"
+                                >
+                                    —
+                                </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     BOTTOM NAVIGATION
+                ========================================== -->
+                <nav
+                    class="bottom-navigation"
+                    aria-label="Main navigation"
+                >
+
+                    <button
+                        type="button"
+                        id="exploreNav"
+                        class="nav-item active"
+                        aria-current="page"
+                    >
+                        <span
+                            class="nav-icon location-nav-icon"
+                            aria-hidden="true"
+                        >
+                            ●
+                        </span>
+
+                        <span class="nav-label">
+                            Explore
+                        </span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="youNav"
+                        class="nav-item"
+                    >
+                        <span
+                            class="nav-icon bookmark-nav-icon"
+                            aria-hidden="true"
+                        >
+                            ♧
+                        </span>
+
+                        <span class="nav-label">
+                            You
+                        </span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="contributeNav"
+                        class="nav-item"
+                    >
+                        <span
+                            class="nav-icon contribute-nav-icon"
+                            aria-hidden="true"
+                        >
+                            +
+                        </span>
+
+                        <span class="nav-label">
+                            Contribute
+                        </span>
+                    </button>
+
+                </nav>
+
+            </section>
+
+        </section>
+
+
+        <!-- =================================================
+             PERMISSION / ERROR MESSAGE
+        ================================================== -->
+        <div
+            id="permissionMessage"
+            class="permission-message"
+            role="alert"
+            aria-live="assertive"
+            hidden
+        >
+            <div class="permission-card">
+
+                <div class="permission-icon" aria-hidden="true">
+                    📍
+                </div>
+
+                <h2 id="permissionTitle">
+                    Location access
+                </h2>
+
+                <p id="permissionText">
+                    Allow location access to find your current location.
+                </p>
+
+                <button
+                    type="button"
+                    id="retryLocationButton"
+                    class="primary-button"
+                >
+                    Try again
+                </button>
+
+            </div>
+        </div>
+
+    </main>
+
+
+    <!-- =====================================================
+         LEAFLET MAP JAVASCRIPT
+    ====================================================== -->
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+
+    <!-- Main application JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+</html>
